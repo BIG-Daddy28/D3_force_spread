@@ -1,5 +1,6 @@
 # D3_force_spread
-D3 force oriented graph can realize the transmission animation of disease in the network, add and delete edges and nodes, and print the changed data  D3力导向图，实现了疾病在网络中的传播动画，增加删除边与节点，并可以打印变更的数据
+D3 force oriented graph can realize the transmission animation of disease in the network, add and delete edges and nodes, and print the changed data  
+D3力导向图，实现了疾病在网络中的传播动画，增加删除边与节点，并可以打印变更的数据
 ## 功能实现
 ### 1.实现D3的力导向图
 ### 2.实现疾病或舆论在力导向图上的交互式传播动画
