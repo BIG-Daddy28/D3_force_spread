@@ -1,0 +1,375 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>D3_Force</title>
+    <script src="./js/d3.min.js"></script>
+    <script type="text/javascript" src="./js/jquery.min.js"></script>
+</head>
+<body>
+<svg width="1000" height="600"></svg>
+<style type="text/css">
+    .tooltip{
+        font-family:simsun;
+        font-size:16px;
+        width:120;
+        height:auto;
+        position:absolute; 
+        text-align:center;
+        border-style:solid;
+        border-width:1px;
+        background-color:white;
+        border-radius:5px;  
+    }
+</style>
+
+</body>
+<script type="text/javascript">
+
+
+    var nodes,edges,step=0,step_r=0,t,prosis,page;
+    var new_nodes=[],new_edges=[],delete_nodes=[],delete_edges=[];
+
+    var tooltip = d3.select("body").append("div")
+                        .attr("class","tooltip") //用于css设置类样式
+                        .attr("opacity",0.0);
+
+    $.ajaxSetup({async:false});
+        $.getJSON("./json/nodes.json",function (njson)    //读取网络json，命名为json变量
+    {
+         $.getJSON("./json/edges.json",function (ejson)     //读取传播json，命名为pro
+       {
+         $.getJSON("./json/newprocess.json",function (pro)    //读取网络json，命名为json变量
+        {
+            nodes = njson;     //把json中的nodes赋值给nodes
+            edges = ejson;     //把pro中的edges赋值给edges
+            prosis = pro;
+        });
+     });                        
+    });   
+
+    var width = 1000;
+    var height = 600;
+    var svg = d3
+        .select("svg")
+        .attr("width",width)
+        .attr("height",height);
+    var forcesimulation = d3.forceSimulation(nodes)
+        .force("link", d3.forceLink(edges).distance(200))
+        .force("charge",d3.forceManyBody().strength(-100))
+        .force("center",d3.forceCenter(width/2, height/2));
+       
+    var edges_g = svg.append('g');
+    var nodes_g = svg.append('g');
+    
+
+    // 画边
+    var svg_force_edges = edges_g
+        .selectAll("path")
+        .data(edges)
+        .enter()
+        .append("path")
+        .style("stroke","#DCDCDC")
+        .style("stroke-width",1)
+        .on("dblclick", function(d){
+                //双击边删除
+                d3.select(this).remove();
+                tooltip.style("opacity", 0.0);
+                delete_edges.push(d);
+            })
+        .on("mouseover",function(d){
+                  tooltip.html("边:"+d.source.id+"-"+d.target.id)
+                  //设置tooltip的位置(left,top表示相对于页面的距离) 
+                          .style("left",(d3.event.pageX)+"px")
+                          .style("top",(d3.event.pageY+20)+"px")
+                          .style("opacity",1.0); 
+             })
+        .on('mouseout', function(e) { 
+                tooltip.style("opacity",0.0);
+             
+                });
+ 
+
+    //画节点
+    var svg_force_nodes = nodes_g
+        .selectAll("circle")
+        .data(nodes)
+        .enter()
+        .append("circle")
+        .attr("r",9)
+        .attr("fill","#87CEEB")
+        .on("dblclick", function (d){
+                //双击节点删除 节 点
+                d3.select(this).remove();
+                d3.selectAll("path").each(function (e) {
+                    if (e.source === d || e.target === d) {
+                        d3.select(this).remove();
+                    }
+                    
+                })
+                tooltip.style("opacity", 0.0);
+                delete_nodes.push(d.id);
+            })
+        .on("mouseover",function(d){
+               tooltip.html("id:"+d.id+"<br/>"+"标签:"+d.label/*+"文字描述"+"<br/>"+d.id+"文字描述"*/)
+                //设置tooltip的位置(left,top 相对于页面的距离) 
+                        .style("left",(d3.event.pageX)+"px")
+                        .style("top",(d3.event.pageY+20)+"px")
+                        .style("opacity",1.0); 
+            })
+        .on('mouseout', function(d) { 
+                tooltip.style("opacity",0.0);
+             
+            })
+        .call(d3.drag()
+            .on("start", drag_start)
+            .on("drag", drag_drag)
+            .on("end", drag_end));
+
+    function drag_start(d) {
+        if (!d3.event.active)
+            forcesimulation.alphaTarget(0.002).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+    }
+
+    function drag_drag(d) {
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+    }
+
+    function drag_end(d) {
+        if (!d3.event.active)
+            forcesimulation.alphaTarget(0);
+    }
+        
+ 
+    function draw(){
+        svg_force_nodes
+            .attr("cx",function(d){return d.x;})
+            .attr("cy",function(d){return d.y;})
+            .attr("role",function (d) {
+                return d.role;
+            });
+ 
+        svg_force_edges
+            .attr("d",function(d){
+                return 'M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y
+            })
+            .attr("marker-end", "url(#resolved)");
+    }
+
+    forcesimulation.on("tick",draw);
+    svg.call(d3.zoom().scaleExtent([1/10, 10]).on('zoom', () => {
+        var transform = d3.event.transform;
+        svg_force_nodes.attr('transform', transform);
+        svg_force_edges.attr("transform",transform);
+    })).on('dblclick.zoom', null);
+ 
+    //添加节点函数
+    function add_nodes()
+    {
+        
+        var e = {id: nodes[nodes.length-1].index+1};
+        nodes.push(e);
+        update_nodes()
+        new_nodes.push(nodes[nodes.length-1].index);
+    }
+
+    //添加边函数
+    function add_edges()
+    {
+        var source_id = document.getElementById("text_source").value;
+        var target_id = document.getElementById("text_target").value;
+
+        for(var add_nodes_i=0;add_nodes_i<edges.length;add_nodes_i++)
+         {
+             if((edges[add_nodes_i].source.id==source_id && edges[add_nodes_i].target.id==target_id)||(edges[add_nodes_i].source.id==target_id && edges[add_nodes_i].target.id==source_id))
+             {
+             alert("该边已经存在！不可重复添加");
+             return false;
+             }
+
+         }
+
+        if(source_id=="")
+        {
+           alert("源节点id不能为空！");
+           return false;
+        }
+        else if(target_id=="")
+        {
+           alert("目标节点id不能为空！");
+           return false;
+        }
+        else if(source_id > nodes[nodes.length-1].id || target_id > nodes[nodes.length-1].id ||parseInt(source_id)< 0 ||parseInt(target_id)< 0)
+        {
+           alert("不存在该节点");
+           return false;
+        }
+        else if(source_id.includes(delete_nodes) || target_id.includes(delete_nodes))
+        {
+           alert("该节点已删除");
+           return false;
+        }
+        else
+        {
+            var f =  {"source":source_id,"target":target_id};
+            edges.push(f);
+            update_edges()
+            new_edges.push(f)
+        }
+
+    }
+
+    //更新节点数据函数
+    function update_nodes() {
+        svg_force_nodes = svg_force_nodes
+            .data(nodes)
+            .enter()
+            .append("circle")
+            .attr("r",9)
+            .attr("fill","#87CEEB")
+            .on("dblclick", function (d) {
+                //双击节点删除，获取选中节点的在json中的name的值
+                d3.select(this).remove();
+                d3.selectAll("path").each(function (e) {
+                    if (e.source === d || e.target === d) {
+                        d3.select(this).remove();
+                    }
+                })
+                tooltip.style("opacity", 0.0);
+                delete_nodes.push(d.id);
+            })
+            .on("mouseover",function(d,i){
+                  tooltip.html("id:"+d.id+"<br/>"+"标签:"+d.label/*+"文字描述"+"<br/>"+d.id+"文字描述"*/)
+                  //设置tooltip的位置(left,top 相对于页面的距离) 
+                          .style("left",(d3.event.pageX)+"px")
+                          .style("top",(d3.event.pageY+20)+"px")
+                          .style("opacity",1.0); 
+             })
+            .on('mouseout', function(d) { 
+                tooltip.style("opacity",0.0);
+             
+                })
+            .merge(svg_force_nodes).call(d3.drag()
+            .on("start", drag_start)
+            .on("drag", drag_drag)
+            .on("end", drag_end));
+            
+
+
+        forcesimulation.nodes(nodes);
+        forcesimulation.alpha(1).restart();
+    }
+    
+    //更新边数据函数
+    function update_edges()
+    {
+        svg_force_edges = svg_force_edges.data(edges)
+            .enter()
+            .append("path")
+            .style("stroke","#DCDCDC")
+            .style("stroke-width",1)
+            .merge(svg_force_edges)
+            .on("dblclick", function (d) {
+                //双击边删除
+                d3.select(this).remove();
+                tooltip.style("opacity", 0.0);
+                delete_edges.push(d);
+            })
+            .on("mouseover",function(d){
+                  tooltip.html("边:"+d.source.id+"-"+d.target.id)
+                  //设置tooltip的位置(left,top 相对于页面的距离) 
+                          .style("left",(d3.event.pageX)+"px")
+                          .style("top",(d3.event.pageY+20)+"px")
+                          .style("opacity",1.0); 
+             })
+            .on('mouseout', function(d) { 
+                tooltip.style("opacity",0.0);
+             
+                });
+
+        forcesimulation.force("link").links(edges);
+        forcesimulation.alpha(1).restart();
+    }
+
+
+
+
+    function timedCount()               //改变节点颜色动画
+        {                                     
+            d3.selectAll("circle")
+            .transition(svg_force_nodes)
+            .duration(600)
+            .style("fill",function(d,i){ 
+                 if(prosis.process[step_r].includes(d.id))
+                   return "#DC143C";
+                 else
+                   return "#87CEEB";                   
+                 });
+            step = step+1
+            step_r = step%(prosis.process.length)
+         t = setTimeout(timedCount,3000)
+        }
+  
+        function stopCount()    //停止播放函数
+        { 
+            step = 0;
+            step_r = 0;
+            d3.selectAll("circle")
+            .style("fill","#87CEEB")
+            clearTimeout(t) 
+        }
+
+
+        function juststopCount()
+        {
+           clearTimeout(t) 
+        }
+
+
+        function change()            //捕捉删除节点,打印结果
+        {
+
+            console.log("添加的节点id：");
+            console.log(new_nodes);
+            console.log("添加的边：");
+            console.log(new_edges);
+            console.log("删除的节点id：");
+            console.log(delete_nodes);
+            console.log("删除的边：");
+            console.log(delete_edges);
+
+        }
+
+
+        function pageShow()    //2020-4月新内容，添加传播步骤显示
+       {
+        var oText=document.getElementById('text1');
+        oText.innerText=step_r+1;//给文本框赋值并显示
+        page = setTimeout(pageShow,3000)
+       }
+
+       function stopShow() 
+        { 
+         clearTimeout(page)
+        }
+
+</script>
+
+<label>当前步数: </label>
+        <span type="text" name = "当前步骤" id="text1" size="3"></span>
+        <input type="button" value="开始" onClick="pageShow();timedCount()">
+        <input type="button" value="暂停" onClick="juststopCount();stopShow()">
+        <input type="button" value="结束" onClick="stopCount();stopShow()"> 
+        <input type="button" value="输出变更的数据" onClick="change()"> 
+        <br>
+    
+
+<input type="button" value="添加节点" onClick="add_nodes()">
+边的源节点：<input type="text" value="" id="text_source" style="width:30px">
+边的目标节点：<input type="text" value="" id="text_target" style="width:30px">
+<input type="button" value="添加边" onClick="add_edges()">
+
+</html>
