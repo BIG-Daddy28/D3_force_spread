@@ -8,8 +8,8 @@ D3 force oriented graph can realize the transmission animation of disease in the
 #### 3.2添加边需要鼠标悬浮到想要连接的两个节点上，会显示节点的id，将id输入到对应的文本框中再点击添加按钮即可
 #### 3.3删除节点直接双击想要删除的节点即可，删除边同理（边太细可用鼠标滚轮进行缩放）
 ## 运行方法
-### 下载后解压即可，数据是读取的json文件，若在本地运行是，需要在谷歌浏览器的快捷方式上右键属性，在目标栏中末尾空一格后加入--allow-file-access-from-files，在服务器上读取json无需此操作。 
-### 若有问题可随时联系我，849065628@qq.com  
+### 下载后解压即可，数据是读取的json文件，若在本地运行是，需要在谷歌浏览器的快捷方式上右键属性，在目标栏中末尾空一格后加入--allow-file-access-from-files，在服务器上读取json无需此操作。   
+若有问题可随时联系我，849065628@qq.com  
 ***
 ## Function realization
 
@@ -28,5 +28,4 @@ D3 force oriented graph can realize the transmission animation of disease in the
 ## Operation method
 
 ### Download and unzip it. The data is the read JSON file. If it is running locally, you need to right-click the attribute on the shortcut of Google browser, and then add -- allow file access from files after a blank space at the end of the target column. This operation is not required to read JSON on the server.
-
-### If you have any questions, please feel free to contact me, 849065628@qq.com
+If you have any questions, please feel free to contact me, 849065628@qq.com
