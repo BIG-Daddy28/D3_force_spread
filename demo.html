@@ -99,7 +99,7 @@
         .attr("r",9)
         .attr("fill","#87CEEB")
         .on("dblclick", function (d){
-                //双击节点删除 节 点
+                //双击节点删除节点
                 d3.select(this).remove();
                 d3.selectAll("path").each(function (e) {
                     if (e.source === d || e.target === d) {
@@ -112,7 +112,7 @@
             })
         .on("mouseover",function(d){
                tooltip.html("id:"+d.id+"<br/>"+"标签:"+d.label/*+"文字描述"+"<br/>"+d.id+"文字描述"*/)
-                //设置tooltip的位置(left,top 相对于页面的距离) 
+                //设置tooltip的位置(left,top代表相对于页面的距离) 
                         .style("left",(d3.event.pageX)+"px")
                         .style("top",(d3.event.pageY+20)+"px")
                         .style("opacity",1.0); 
