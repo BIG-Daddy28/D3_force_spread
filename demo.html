@@ -28,7 +28,7 @@
 
 
     var nodes,edges,step=0,step_r=0,t,prosis,page;
-    var new_nodes=[],new_edges=[],delete_nodes=[],delete_edges=[];
+    var new_nodes=[],new_edges=[],delete_nodes=[],delete_edges=[],array_node=[];
 
     var tooltip = d3.select("body").append("div")
                         .attr("class","tooltip") //用于css设置类样式
@@ -61,6 +61,11 @@
        
     var edges_g = svg.append('g');
     var nodes_g = svg.append('g');
+
+    for(var a_i=0;a_i<nodes.length;a_i++)
+    {
+        array_node.push(nodes[a_i].id);
+    }
     
 
     // 画边
@@ -202,7 +207,7 @@
            alert("目标节点id不能为空！");
            return false;
         }
-        else if(!(nodes.includes(parseInt(source_id)) || nodes.includes(parseInt(target_id))) ||parseInt(source_id)< 0 ||parseInt(target_id)< 0)
+        else if(!array_node.includes(parseInt(source_id)) || !array_node.includes(parseInt(target_id)) ||parseInt(source_id)< 0 ||parseInt(target_id)< 0)
         {
            alert("不存在该节点");
            return false;
@@ -269,7 +274,7 @@
         svg_force_edges = svg_force_edges.data(edges)
             .enter()
             .append("path")
-            .style("stroke","#DCDCDC")
+            .style("stroke","black")
             .style("stroke-width",1)
             .merge(svg_force_edges)
             .on("dblclick", function (d) {
