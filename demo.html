@@ -202,7 +202,7 @@
            alert("目标节点id不能为空！");
            return false;
         }
-        else if(source_id > nodes[nodes.length-1].id || target_id > nodes[nodes.length-1].id ||parseInt(source_id)< 0 ||parseInt(target_id)< 0)
+        else if(!(nodes.includes(parseInt(source_id)) || nodes.includes(parseInt(target_id))) ||parseInt(source_id)< 0 ||parseInt(target_id)< 0)
         {
            alert("不存在该节点");
            return false;
