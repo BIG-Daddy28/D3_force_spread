@@ -31,4 +31,4 @@ D3力导向图，实现了疾病在网络中的传播动画，增加删除边与
 
 ### Unzip after downloading. The data is the JSON file you read. If you run it locally, you need to right-click the property on the shortcut in Google Browser, add a space at the end of the target bar--allow-file-access-from-files, and read the JSON on the server without doing so.
 
-If you have any questions, feel free to contact me.849065628@qq.com
+If you have any questions, feel free to contact me. 849065628@qq.com
